@@ -1,8 +1,9 @@
 #import "Controllers/SLSourcesViewController.h"
 #import "Managers/SLRepoManager.h"
 
-@interface SLSourcesViewController ()
+@interface SLSourcesViewController () <SLRepoManagerDelegate>
 @property (nonatomic, strong) NSArray *repos;
+@property (nonatomic, strong) NSMutableDictionary *progressDict;
 @end
 
 @implementation SLSourcesViewController
@@ -11,17 +12,25 @@
     [super viewDidLoad];
     self.title = @"Sources";
     self.tableView.rowHeight = 60;
+    self.progressDict = [NSMutableDictionary dictionary];
+
     UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd
-                                                                               target:self
-                                                                               action:@selector(addSource:)];
+                                                                                target:self
+                                                                                action:@selector(addSource:)];
     UIBarButtonItem *refreshButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh
-                                                                                    target:self
-                                                                                    action:@selector(refreshSources:)];
+                                                                                     target:self
+                                                                                     action:@selector(refreshSources:)];
     self.navigationItem.rightBarButtonItems = @[addButton, refreshButton];
-    
+
+    [SLRepoManager sharedInstance].delegate = self;
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reloadData)
                                                  name:SLRepoManagerDidRefreshNotification
+                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(progressUpdated:)
+                                                 name:SLRepoManagerProgressNotification
                                                object:nil];
     [self reloadData];
 }
@@ -33,6 +42,15 @@
 - (void)reloadData {
     self.repos = [SLRepoManager sharedInstance].repos;
     [self.tableView reloadData];
+}
+
+- (void)progressUpdated:(NSNotification *)notification {
+    SLRepo *repo = notification.userInfo[@"repo"];
+    NSNumber *progress = notification.userInfo[@"progress"];
+    if (repo && progress) {
+        self.progressDict[repo.url] = progress;
+        [self.tableView reloadData];
+    }
 }
 
 - (void)addSource:(id)sender {
@@ -51,24 +69,13 @@
         if (url.length > 0) {
             [[SLRepoManager sharedInstance] addRepoWithURL:url];
             [self reloadData];
-            [[SLRepoManager sharedInstance] refreshReposWithCompletion:^(BOOL success) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self reloadData];
-                });
-            }];
+            [[SLRepoManager sharedInstance] refreshRepos];
         }
     }
 }
 
 - (void)refreshSources:(id)sender {
-    [[SLRepoManager sharedInstance] refreshReposWithCompletion:^(BOOL success) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self reloadData];
-            NSString *msg = success ? @"Sources refreshed successfully." : @"Failed to refresh some sources.";
-            UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Refresh" message:msg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-            [av show];
-        });
-    }];
+    [[SLRepoManager sharedInstance] refreshRepos];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -83,31 +90,49 @@
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     SLRepo *repo = self.repos[indexPath.row];
-    cell.textLabel.text = repo.label ?: repo.url;
+    cell.textLabel.text = repo.label ?: repo.origin ?: repo.url;
     cell.textLabel.font = [UIFont boldSystemFontOfSize:16];
-    cell.detailTextLabel.text = repo.url;
+
+    NSNumber *progress = self.progressDict[repo.url];
+    if (progress && [progress floatValue] < 1.0f) {
+        cell.detailTextLabel.text = [NSString stringWithFormat:@"Refreshing... %.0f%%", [progress floatValue] * 100];
+        cell.detailTextLabel.textColor = [UIColor orangeColor];
+    } else {
+        cell.detailTextLabel.text = repo.url;
+        cell.detailTextLabel.textColor = [UIColor grayColor];
+    }
     cell.detailTextLabel.font = [UIFont systemFontOfSize:12];
-    cell.detailTextLabel.textColor = [UIColor grayColor];
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     SLRepo *repo = self.repos[indexPath.row];
-    NSString *msg = [NSString stringWithFormat:@"URL: %@\nLabel: %@\nOrigin: %@", repo.url, repo.label ?: @"N/A", repo.origin ?: @"N/A"];
+    NSString *msg = [NSString stringWithFormat:@"URL: %@\nLabel: %@\nOrigin: %@\nPackages: %lu",
+                     repo.url, repo.label ?: @"N/A", repo.origin ?: @"N/A",
+                     (unsigned long)[[SLRepoManager sharedInstance] packagesForRepo:repo].count];
     UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Repository Info" message:msg delegate:self cancelButtonTitle:@"OK" otherButtonTitles:@"Remove", nil];
     av.tag = indexPath.row;
     [av show];
 }
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
-    if (alertView.alertViewStyle == UIAlertViewStyleDefault && buttonIndex == 1) {
-        if (alertView.tag < (NSInteger)self.repos.count) {
-            SLRepo *repo = self.repos[alertView.tag];
-            [[SLRepoManager sharedInstance] removeRepo:repo];
-            [self reloadData];
-        }
+    if (buttonIndex == 1 && alertView.tag < (NSInteger)self.repos.count) {
+        SLRepo *repo = self.repos[alertView.tag];
+        [[SLRepoManager sharedInstance] removeRepo:repo];
+        [self reloadData];
     }
+}
+
+#pragma mark - SLRepoManagerDelegate
+
+- (void)repoManagerDidCompleteAll:(SLRepoManager *)manager {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.progressDict removeAllObjects];
+        [self reloadData];
+        UIAlertView *av = [[UIAlertView alloc] initWithTitle:@"Refresh" message:@"Sources refreshed." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [av show];
+    });
 }
 
 @end

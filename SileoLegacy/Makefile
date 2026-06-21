@@ -11,23 +11,27 @@ APPLICATION_NAME = Sileo
 Sileo_FILES = main.m \
 	Controllers/SLAppDelegate.m \
 	Controllers/SLTabBarController.m \
+	Controllers/SLHomeViewController.m \
 	Controllers/SLSourcesViewController.m \
 	Controllers/SLPackagesViewController.m \
 	Controllers/SLPackageDetailViewController.m \
 	Controllers/SLDownloadsViewController.m \
+	Controllers/SLSearchViewController.m \
 	Models/SLPackage.m \
 	Models/SLRepo.m \
 	Managers/SLRepoManager.m \
 	Managers/SLPackageManager.m \
 	Managers/SLDownloadManager.m \
 	Managers/SLDPKGManager.m \
+	Managers/SLDatabase.m \
+	Managers/SLQueueManager.m \
 	Utils/SLCommandPaths.m \
 	CContrib/decompression.c \
 	CContrib/dpkgversion.c
 
 Sileo_CFLAGS = -fobjc-arc -I. -D_FORTIFY_SOURCE=0 -fno-builtin-memcpy -fno-builtin-memset -fno-stack-protector
 Sileo_FRAMEWORKS = UIKit Foundation CFNetwork CoreFoundation
-Sileo_LDFLAGS = -lz -lbz2 -lobjc \
+Sileo_LDFLAGS = -lz -lbz2 -lsqlite3 -lobjc \
 	-Wl,-U,_lzma_stream_decoder \
 	-Wl,-U,_lzma_alone_decoder \
 	-Wl,-U,_lzma_code \
