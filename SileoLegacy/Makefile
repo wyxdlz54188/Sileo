@@ -25,9 +25,9 @@ Sileo_FILES = main.m \
 	CContrib/decompression.c \
 	CContrib/dpkgversion.c
 
-Sileo_CFLAGS = -fobjc-arc -I.
+Sileo_CFLAGS = -fobjc-arc -I. -D_FORTIFY_SOURCE=0 -fno-builtin-memcpy -fno-builtin-memset
 Sileo_FRAMEWORKS = UIKit Foundation
-Sileo_LDFLAGS = -lz -lbz2 -L./Deps -llzma -lzstd
+Sileo_LDFLAGS = -lz -lbz2 -L./Deps -llzma -lzstd -lobjc
 Sileo_INSTALL_PATH = /Applications/Sileo.app
 
 include $(THEOS_MAKE_PATH)/application.mk
