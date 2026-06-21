@@ -10,6 +10,16 @@ NSString * const SLRepoManagerRefreshFailedNotification = @"SLRepoManagerRefresh
 @interface SLRepoManager ()
 @property (nonatomic, strong) NSMutableArray *mutableRepos;
 @property (nonatomic, strong) NSMutableDictionary *allPackagesDict;
+- (void)parseListFile:(NSString *)path;
+- (void)parseSourcesFile:(NSString *)path;
+- (NSDictionary *)parseStanzaFields:(NSString *)stanza;
+- (void)writeReposToDiskIfNeeded;
+- (NSData *)downloadURL:(NSString *)url;
+- (NSData *)decompressData:(NSData *)data extension:(NSString *)ext;
+- (void)parsePackagesData:(NSData *)data repoURL:(NSString *)repoURL;
+- (NSString *)releaseURLForRepo:(SLRepo *)repo;
+- (NSString *)packagesURLForRepo:(SLRepo *)repo component:(NSString *)component arch:(NSString *)arch extension:(NSString *)ext;
+- (void)refreshRepo:(SLRepo *)repo arch:(NSString *)arch completion:(void(^)(BOOL))completion;
 @end
 
 @implementation SLRepoManager
@@ -56,6 +66,17 @@ NSString * const SLRepoManagerRefreshFailedNotification = @"SLRepoManagerRefresh
 - (void)writeReposToDiskIfNeeded {
     if (![SLCommandPaths isProcursus]) return;
 }
+
+- (void)parseListFile:(NSString *)path {
+    NSString *content = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
+    if (!content) return;
+    NSArray *lines = [content componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+    for (NSString *line in lines) {
+        NSString *trimmed = [line stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        if (trimmed.length == 0 || [trimmed hasPrefix:@"#"]) continue;
+        SLRepo *repo = [SLRepo repoWithSourceLine:trimmed fromFile:path];
+        if (repo) [self.mutableRepos addObject:repo];
+    }
 }
 
 - (void)parseSourcesFile:(NSString *)path {
@@ -96,21 +117,6 @@ NSString * const SLRepoManagerRefreshFailedNotification = @"SLRepoManagerRefresh
         }
     }
     return fields;
-}
-
-- (void)loadCache {
-    NSString *cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
-    NSString *cachePath = [cacheDir stringByAppendingPathComponent:@"sileo_packages.cache"];
-    NSDictionary *cached = [NSKeyedUnarchiver unarchiveObjectWithFile:cachePath];
-    if (cached) {
-        [self.allPackagesDict addEntriesFromDictionary:cached];
-    }
-}
-
-- (void)saveCache {
-    NSString *cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject];
-    NSString *cachePath = [cacheDir stringByAppendingPathComponent:@"sileo_packages.cache"];
-    [NSKeyedUnarchiver archiveRootObject:self.allPackagesDict toFile:cachePath];
 }
 
 - (void)addRepoWithURL:(NSString *)url {
@@ -172,7 +178,7 @@ NSString * const SLRepoManagerRefreshFailedNotification = @"SLRepoManagerRefresh
 
 - (void)refreshReposWithCompletion:(void(^)(BOOL success))completion {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSInteger successCount = 0;
+        __block NSInteger successCount = 0;
         NSString *arch = [[SLDPKGManager sharedInstance] architecture];
         dispatch_group_t group = dispatch_group_create();
         for (SLRepo *repo in self.mutableRepos) {
