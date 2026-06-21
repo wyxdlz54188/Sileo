@@ -1,7 +1,7 @@
 # SileoLegacy - iOS 6 Compatible Package Manager
 # Build system for theos
 
-export TARGET = iphone:latest:6.0
+export TARGET = iphone:6.0:6.0
 export ARCHS = armv7 armv7s
 export TARGET_IPHONEOS_DEPLOYMENT_VERSION = 6.0
 
@@ -25,7 +25,7 @@ Sileo_FILES = main.m \
 	CContrib/decompression.c \
 	CContrib/dpkgversion.c
 
-Sileo_CFLAGS = -fobjc-arc -I. -D_FORTIFY_SOURCE=0 -fno-builtin-memcpy -fno-builtin-memset
+Sileo_CFLAGS = -fobjc-arc -I. -D_FORTIFY_SOURCE=0 -fno-builtin-memcpy -fno-builtin-memset -fno-stack-protector
 Sileo_FRAMEWORKS = UIKit Foundation
 Sileo_LDFLAGS = -lz -lbz2 -L./Deps -llzma -lzstd -lobjc
 Sileo_INSTALL_PATH = /Applications/Sileo.app

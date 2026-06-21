@@ -34,17 +34,20 @@ jobs:
         rm -f iPhoneOS6.0.sdk.zip
         echo "SDK installed at $THEOS/sdks/iPhoneOS6.0.sdk"
         ls -la $THEOS/sdks/iPhoneOS6.0.sdk/
+        echo "=== Framework dylibs ==="
+        ls "$THEOS/sdks/iPhoneOS6.0.sdk/System/Library/Frameworks/" 2>/dev/null || echo "No System/Library/Frameworks"
     
-    - name: Generate TBD stubs for missing system libraries
+    - name: Generate TBD stubs from SDK dylibs (v4 JSON)
       run: |
         SDK=$THEOS/sdks/iPhoneOS6.0.sdk
         python3 << 'PYEOF'
-        import struct, os
-        
+        import struct, os, json
+
         SDK = os.environ['THEOS'] + '/sdks/iPhoneOS6.0.sdk'
         SYSTEM_LIB = SDK + '/usr/lib/system'
         USR_LIB = SDK + '/usr/lib'
-        
+        FW_DIR = SDK + '/System/Library/Frameworks'
+
         def parse_fat_first_slice(data):
             magic = struct.unpack('>I', data[:4])[0]
             if magic == 0xcafebabe:
@@ -59,7 +62,7 @@ jobs:
                         break
                 return ao, ao + az
             return 0, len(data)
-        
+
         def extract_exported_symbols(path):
             with open(path, 'rb') as f:
                 data = f.read()
@@ -98,47 +101,87 @@ jobs:
                     if not name.startswith('_OBJC_') and not name.startswith('.objc_'):
                         symbols.add(name)
             return symbols
-        
-        all_syms = set()
-        for fname in sorted(os.listdir(SYSTEM_LIB)):
-            if not fname.endswith('.dylib'): continue
-            syms = extract_exported_symbols(SYSTEM_LIB + '/' + fname)
-            all_syms.update(syms)
-            print(f"  {fname}: {len(syms)} symbols")
-        
-        util_path = USR_LIB + '/libutil.dylib'
-        if os.path.exists(util_path):
-            syms = extract_exported_symbols(util_path)
-            all_syms.update(syms)
-            print(f"  libutil.dylib: {len(syms)} symbols")
-        
-        print(f"Total: {len(all_syms)} symbols extracted")
-        
-        symbols_sorted = sorted(all_syms)
-        lines = []
-        lines.append("--- !tapi-tbd-v2")
-        lines.append("archs: [ armv7, armv7s ]")
-        lines.append("platform: ios")
-        lines.append("install-name: /usr/lib/libSystem.B.dylib")
-        lines.append("current-version: 1.0.0")
-        lines.append("compatibility-version: 1.0.0")
-        lines.append("exports:")
-        lines.append("  - archs: [ armv7, armv7s ]")
-        sym_line = "    symbols: [ "
-        for i, s in enumerate(symbols_sorted):
-            if i > 0:
-                sym_line += ", "
-            sym_line += s
-            if (i + 1) % 6 == 0 and i + 1 < len(symbols_sorted):
-                sym_line += ",\n              "
-        sym_line += " ]"
-        lines.append(sym_line)
-        
-        tbd_path = SDK + '/usr/lib/libSystem_syms.tbd'
-        with open(tbd_path, 'w') as f:
-            f.write('\n'.join(lines) + '\n')
-        
-        print(f"Written: {tbd_path} ({len('\n'.join(lines))} bytes)")
+
+        def write_json_tbd(path, install_name, symbols, current_ver="1.0.0", compat_ver="1.0.0"):
+            """Write a TBD v4 JSON file compatible with Xcode 16 linker."""
+            targets = ["armv7-apple-ios", "armv7s-apple-ios"]
+            tbd = {
+                "tapi_tbd_version": 4,
+                "main_library": {
+                    "target_info": [
+                        {"target": "armv7-apple-ios", "minimum_deployment": "6.0"},
+                        {"target": "armv7s-apple-ios", "minimum_deployment": "6.0"}
+                    ],
+                    "flags": [
+                        {"targets": targets,
+                         "attributes": ["not_app_extension_safe"]}
+                    ],
+                    "install_names": [{"name": install_name}],
+                    "current_version": current_ver,
+                    "compatibility_version": compat_ver,
+                    "swift_abi": 0,
+                    "exported_symbols": [
+                        {"targets": targets,
+                         "data": {"global": sorted(list(symbols))}}
+                    ]
+                }
+            }
+            with open(path, 'w') as f:
+                json.dump(tbd, f)
+            print(f"  Written: {path} ({len(symbols)} symbols)")
+
+        # Collect symbols from system dylibs
+        all_system_syms = set()
+        if os.path.isdir(SYSTEM_LIB):
+            for fname in sorted(os.listdir(SYSTEM_LIB)):
+                if not fname.endswith('.dylib'): continue
+                syms = extract_exported_symbols(SYSTEM_LIB + '/' + fname)
+                all_system_syms.update(syms)
+                print(f"  {fname}: {len(syms)} symbols")
+
+        # Also extract from usr/lib dylibs
+        if os.path.isdir(USR_LIB):
+            for fname in sorted(os.listdir(USR_LIB)):
+                if not fname.endswith('.dylib'): continue
+                path = USR_LIB + '/' + fname
+                try:
+                    syms = extract_exported_symbols(path)
+                    all_system_syms.update(syms)
+                    print(f"  usr/lib/{fname}: {len(syms)} symbols")
+                except Exception as e:
+                    print(f"  usr/lib/{fname}: skipped ({e})")
+
+        print(f"Total system symbols: {len(all_system_syms)}")
+
+        # Write libSystem.B.tbd in JSON v4 format
+        write_json_tbd(
+            SDK + '/usr/lib/libSystem.B.tbd',
+            '/usr/lib/libSystem.B.dylib',
+            all_system_syms,
+            "1.0.0", "1.0.0"
+        )
+
+        # Also generate framework TBDs from SDK framework dylibs
+        if os.path.isdir(FW_DIR):
+            print("\n=== Framework TBDs ===")
+            for fwname in sorted(os.listdir(FW_DIR)):
+                fwpath = FW_DIR + '/' + fwname
+                if not fwname.endswith('.framework'): continue
+                # The actual dylib inside .framework
+                libname = fwname.replace('.framework', '')
+                dylib_path = fwpath + '/' + libname
+                if os.path.isfile(dylib_path):
+                    syms = extract_exported_symbols(dylib_path)
+                    if syms:
+                        tbd_out = fwpath + '/' + libname + '.tbd'
+                        write_json_tbd(
+                            tbd_out,
+                            '/System/Library/Frameworks/' + fwname + '/' + libname,
+                            syms,
+                            "6.0.0", "6.0.0"
+                        )
+        else:
+            print("No framework directory found")
         PYEOF
     
     - name: Build SileoLegacy
