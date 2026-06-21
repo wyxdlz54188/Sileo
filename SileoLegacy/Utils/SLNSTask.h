@@ -1,6 +1,8 @@
 #ifndef SLNSTask_h
 #define SLNSTask_h
 
+@class NSPipe;
+
 @interface NSTask : NSObject
 
 @property (copy) NSString *launchPath;
@@ -16,21 +18,6 @@
 - (void)waitUntilExit;
 - (void)interrupt;
 - (void)terminate;
-
-@end
-
-@interface NSPipe : NSObject
-
-+ (id)pipe;
-- (id)fileHandleForReading;
-- (id)fileHandleForWriting;
-
-@end
-
-@interface NSFileHandle (SLNSTask)
-
-- (NSData *)readDataToEndOfFile;
-- (void)closeFile;
 
 @end
 
