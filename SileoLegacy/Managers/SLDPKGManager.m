@@ -2,6 +2,7 @@
 #import "Utils/SLCommandPaths.h"
 #import "Models/SLPackage.h"
 #import "C Contrib/dpkgversion.h"
+#import "Utils/SLNSTask.h"
 
 @interface SLDPKGManager ()
 @property (nonatomic, copy) NSString *cachedArchitecture;
