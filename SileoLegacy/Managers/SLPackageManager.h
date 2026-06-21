@@ -9,5 +9,6 @@
 - (NSArray *)availableUpdates;
 - (NSArray *)packagesWithQuery:(NSString *)query;
 - (SLPackage *)packageWithID:(NSString *)packageID;
+- (void)invalidateCache;
 
 @end
