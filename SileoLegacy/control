@@ -1,0 +1,9 @@
+Package: com.sileo.sileolegacy
+Name: SileoLegacy
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: Sileo Package Manager for iOS 6.0+
+Maintainer: Sileo Team
+Author: Sileo Team
+Section: Packaging
+Depends: firmware (>= 6.0)
