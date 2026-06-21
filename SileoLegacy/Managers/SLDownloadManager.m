@@ -1,7 +1,7 @@
-#import "SLDownloadManager.h"
-#import "SLCommandPaths.h"
-#import "SLDPKGManager.h"
-#import "SLPackageManager.h"
+#import "Managers/SLDownloadManager.h"
+#import "Utils/SLCommandPaths.h"
+#import "Managers/SLDPKGManager.h"
+#import "Managers/SLPackageManager.h"
 
 @interface SLDownloadManager ()
 @property (nonatomic, strong) NSMutableArray *operationQueue;

@@ -1,8 +1,8 @@
-#import "SLAppDelegate.h"
-#import "SLTabBarController.h"
-#import "SLRepoManager.h"
-#import "SLPackageManager.h"
-#import "SLDownloadManager.h"
+#import "Controllers/SLAppDelegate.h"
+#import "Controllers/SLTabBarController.h"
+#import "Managers/SLRepoManager.h"
+#import "Managers/SLPackageManager.h"
+#import "Managers/SLDownloadManager.h"
 
 @implementation SLAppDelegate
 

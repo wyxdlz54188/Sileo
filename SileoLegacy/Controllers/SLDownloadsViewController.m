@@ -1,8 +1,8 @@
-#import "SLDownloadsViewController.h"
-#import "SLPackageManager.h"
-#import "SLDownloadManager.h"
-#import "SLRepoManager.h"
-#import "SLPackage.h"
+#import "Controllers/SLDownloadsViewController.h"
+#import "Managers/SLPackageManager.h"
+#import "Managers/SLDownloadManager.h"
+#import "Managers/SLRepoManager.h"
+#import "Models/SLPackage.h"
 
 @interface SLDownloadsViewController ()
 @property (nonatomic, strong) NSArray *installedPackages;

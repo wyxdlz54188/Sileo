@@ -1,7 +1,7 @@
-#import "SLPackageDetailViewController.h"
-#import "SLDownloadManager.h"
-#import "SLPackageManager.h"
-#import "SLDPKGManager.h"
+#import "Controllers/SLPackageDetailViewController.h"
+#import "Managers/SLDownloadManager.h"
+#import "Managers/SLPackageManager.h"
+#import "Managers/SLDPKGManager.h"
 
 @interface SLPackageDetailViewController ()
 @property (nonatomic, strong) SLPackage *package;

@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import "SLRepo.h"
+#import "Models/SLRepo.h"
 
 extern NSString * const SLRepoManagerDidRefreshNotification;
 extern NSString * const SLRepoManagerRefreshFailedNotification;

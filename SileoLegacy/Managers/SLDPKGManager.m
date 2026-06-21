@@ -1,6 +1,6 @@
-#import "SLDPKGManager.h"
-#import "SLCommandPaths.h"
-#import "SLPackage.h"
+#import "Managers/SLDPKGManager.h"
+#import "Utils/SLCommandPaths.h"
+#import "Models/SLPackage.h"
 #import "C Contrib/dpkgversion.h"
 
 @interface SLDPKGManager ()

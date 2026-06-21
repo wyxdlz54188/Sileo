@@ -25,7 +25,7 @@ Sileo_FILES = main.m \
 	C\ Contrib/decompression.c \
 	C\ Contrib/dpkgversion.c
 
-Sileo_CFLAGS = -fobjc-arc
+Sileo_CFLAGS = -fobjc-arc -I.
 Sileo_FRAMEWORKS = UIKit Foundation
 Sileo_LDFLAGS = -lz -lbz2 -L./Deps -llzma -lzstd
 Sileo_INSTALL_PATH = /Applications/Sileo.app

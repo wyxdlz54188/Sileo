@@ -1,5 +1,5 @@
-#import "SLSourcesViewController.h"
-#import "SLRepoManager.h"
+#import "Controllers/SLSourcesViewController.h"
+#import "Managers/SLRepoManager.h"
 
 @interface SLSourcesViewController ()
 @property (nonatomic, strong) NSArray *repos;

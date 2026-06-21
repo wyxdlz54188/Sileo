@@ -1,4 +1,4 @@
-#import "SLCommandPaths.h"
+#import "Utils/SLCommandPaths.h"
 
 @implementation SLCommandPaths
 

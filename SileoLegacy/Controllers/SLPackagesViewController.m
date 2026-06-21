@@ -1,9 +1,9 @@
-#import "SLPackagesViewController.h"
-#import "SLPackageDetailViewController.h"
-#import "SLPackageManager.h"
-#import "SLDownloadManager.h"
-#import "SLRepoManager.h"
-#import "SLPackage.h"
+#import "Controllers/SLPackagesViewController.h"
+#import "Controllers/SLPackageDetailViewController.h"
+#import "Managers/SLPackageManager.h"
+#import "Managers/SLDownloadManager.h"
+#import "Managers/SLRepoManager.h"
+#import "Models/SLPackage.h"
 
 @interface SLPackagesViewController () <UISearchBarDelegate>
 @property (nonatomic, strong) NSArray *packages;

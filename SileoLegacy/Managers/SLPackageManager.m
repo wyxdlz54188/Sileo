@@ -1,6 +1,6 @@
-#import "SLPackageManager.h"
-#import "SLRepoManager.h"
-#import "SLDPKGManager.h"
+#import "Managers/SLPackageManager.h"
+#import "Managers/SLRepoManager.h"
+#import "Managers/SLDPKGManager.h"
 
 @interface SLPackageManager ()
 @property (nonatomic, strong) NSArray *cachedInstalledPackages;

@@ -1,5 +1,5 @@
 #import <UIKit/UIKit.h>
-#import "SLPackage.h"
+#import "Models/SLPackage.h"
 
 @interface SLPackageDetailViewController : UIViewController
 

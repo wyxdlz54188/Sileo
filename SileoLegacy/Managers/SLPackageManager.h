@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import "SLPackage.h"
+#import "Models/SLPackage.h"
 
 @interface SLPackageManager : NSObject
 

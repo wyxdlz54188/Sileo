@@ -1,5 +1,5 @@
 #import <UIKit/UIKit.h>
-#import "SLAppDelegate.h"
+#import "Controllers/SLAppDelegate.h"
 
 int main(int argc, char *argv[]) {
     @autoreleasepool {
