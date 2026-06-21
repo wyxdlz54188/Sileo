@@ -289,6 +289,8 @@
     sqlite3_exec(_db, "DELETE FROM packages", NULL, NULL, NULL);
 }
 
+#define PKG_COLUMNS "package_id, name, version, description, section, architecture, maintainer, author, depiction, homepage, filename, size, icon, depends, conflicts, provides, replaces, essential, tag, source_repo_url, raw_control"
+
 - (NSArray<SLPackage *> *)allPackages {
     return [self packagesMatchingQuery:nil];
 }
@@ -307,8 +309,6 @@
     }
     return packages;
 }
-
-#define PKG_COLUMNS "package_id, name, version, description, section, architecture, maintainer, author, depiction, homepage, filename, size, icon, depends, conflicts, provides, replaces, essential, tag, source_repo_url, raw_control"
 
 - (NSArray<SLPackage *> *)packagesMatchingQuery:(NSString *)query {
     if (!_db) return @[];
