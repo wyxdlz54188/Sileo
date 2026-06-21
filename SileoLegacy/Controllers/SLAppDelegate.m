@@ -3,13 +3,10 @@
 #import "Managers/SLRepoManager.h"
 #import "Managers/SLPackageManager.h"
 #import "Managers/SLDownloadManager.h"
-#import "Managers/SLDatabase.h"
 
 @implementation SLAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [[SLDatabase sharedInstance] open];
-
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor = [UIColor whiteColor];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
@@ -22,10 +19,6 @@
     return YES;
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    [[SLRepoManager sharedInstance] refreshRepos];
-}
-
 - (void)applicationWillResignActive:(UIApplication *)application {
 }
 
@@ -33,6 +26,10 @@
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
+}
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    [[SLRepoManager sharedInstance] refreshReposWithCompletion:nil];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
