@@ -27,7 +27,17 @@ Sileo_FILES = main.m \
 
 Sileo_CFLAGS = -fobjc-arc -I. -D_FORTIFY_SOURCE=0 -fno-builtin-memcpy -fno-builtin-memset -fno-stack-protector
 Sileo_FRAMEWORKS = UIKit Foundation
-Sileo_LDFLAGS = -lz -lbz2 -L./Deps -llzma -lzstd -lobjc
+Sileo_LDFLAGS = -lz -lbz2 -lobjc \
+	-Wl,-U,_lzma_stream_decoder \
+	-Wl,-U,_lzma_alone_decoder \
+	-Wl,-U,_lzma_code \
+	-Wl,-U,_lzma_end \
+	-Wl,-U,_ZSTD_DStreamInSize \
+	-Wl,-U,_ZSTD_DStreamOutSize \
+	-Wl,-U,_ZSTD_createDCtx \
+	-Wl,-U,_ZSTD_decompressStream \
+	-Wl,-U,_ZSTD_isError \
+	-Wl,-U,_ZSTD_freeDCtx
 Sileo_INSTALL_PATH = /Applications/Sileo.app
 
 include $(THEOS_MAKE_PATH)/application.mk
