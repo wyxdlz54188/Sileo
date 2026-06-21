@@ -39,6 +39,7 @@ Sileo_LDFLAGS = -lz -lbz2 -lobjc \
 	-Wl,-U,_ZSTD_isError \
 	-Wl,-U,_ZSTD_freeDCtx
 Sileo_INSTALL_PATH = /Applications
+Sileo_INFO_PLIST_PATH = Info.plist
 
 include $(THEOS_MAKE_PATH)/application.mk
 
