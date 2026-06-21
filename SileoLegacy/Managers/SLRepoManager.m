@@ -21,7 +21,7 @@ NSString * const SLRepoManagerRefreshFailedNotification = @"SLRepoManagerRefresh
 NSString * const SLRepoManagerProgressNotification = @"SLRepoManagerProgressNotification";
 
 @interface SLRepoManager ()
-@property (nonatomic, strong) NSMutableArray<SLRepo *> *mutableRepos;
+@property (nonatomic, strong) NSMutableArray *mutableRepos;
 @property (nonatomic, assign) BOOL isRefreshing;
 @property (nonatomic, strong) dispatch_queue_t refreshQueue;
 @property (nonatomic, assign) NSInteger maxConcurrent;
@@ -41,8 +41,8 @@ NSString * const SLRepoManagerProgressNotification = @"SLRepoManagerProgressNoti
     return instance;
 }
 
-- (NSArray<SLRepo *> *)repos { return [self.mutableRepos copy]; }
-- (NSArray<SLPackage *> *)allPackages { return [[SLDatabase sharedInstance] allPackages]; }
+- (NSArray *)repos { return [self.mutableRepos copy]; }
+- (NSArray *)allPackages { return [[SLDatabase sharedInstance] allPackages]; }
 
 - (void)loadRepos {
     [self.mutableRepos removeAllObjects];
@@ -398,7 +398,7 @@ packages_phase:
     NSString *content = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     if (!content) return;
     NSArray *paragraphs = [content componentsSeparatedByString:@"\n\n"];
-    NSMutableArray<SLPackage *> *packages = [NSMutableArray array];
+    NSMutableArray *packages = [NSMutableArray array];
     for (NSString *paragraph in paragraphs) {
         if ([paragraph stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length == 0) continue;
         NSDictionary *fields = [SLPackage parseControlString:paragraph];
@@ -412,23 +412,23 @@ packages_phase:
 
 #pragma mark - Queries
 
-- (NSArray<SLPackage *> *)packagesForRepo:(SLRepo *)repo {
+- (NSArray *)packagesForRepo:(SLRepo *)repo {
     return [[SLDatabase sharedInstance] packagesForRepoURL:repo.url];
 }
 
-- (NSArray<SLPackage *> *)packagesMatchingQuery:(NSString *)query {
+- (NSArray *)packagesMatchingQuery:(NSString *)query {
     return [[SLDatabase sharedInstance] packagesMatchingQuery:query];
 }
 
-- (NSArray<SLPackage *> *)upgradablePackages {
+- (NSArray *)upgradablePackages {
     return [[SLDatabase sharedInstance] upgradablePackages];
 }
 
-- (NSArray<NSString *> *)allSections {
+- (NSArray *)allSections {
     return [[SLDatabase sharedInstance] allSections];
 }
 
-- (NSArray<SLPackage *> *)packagesInSection:(NSString *)section {
+- (NSArray *)packagesInSection:(NSString *)section {
     return [[SLDatabase sharedInstance] packagesInSection:section];
 }
 

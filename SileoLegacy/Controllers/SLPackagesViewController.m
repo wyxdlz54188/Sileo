@@ -7,12 +7,12 @@
 #import <QuartzCore/QuartzCore.h>
 
 @interface SLPackagesViewController () <UISearchBarDelegate>
-@property (nonatomic, strong) NSArray<SLPackage *> *packages;
-@property (nonatomic, strong) NSArray<NSArray<SLPackage *> *> *sections;
-@property (nonatomic, strong) NSArray<NSString *> *sectionTitles;
+@property (nonatomic, strong) NSArray *packages;
+@property (nonatomic, strong) NSArray *sections;
+@property (nonatomic, strong) NSArray *sectionTitles;
 @property (nonatomic, strong) UISearchBar *searchBar;
 @property (nonatomic) BOOL isSearching;
-@property (nonatomic, strong) NSArray<NSString *> *installedIDs;
+@property (nonatomic, strong) NSArray *installedIDs;
 @end
 
 @implementation SLPackagesViewController

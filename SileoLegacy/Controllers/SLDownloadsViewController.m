@@ -4,8 +4,8 @@
 #import "Models/SLPackage.h"
 
 @interface SLDownloadsViewController ()
-@property (nonatomic, strong) NSArray<SLPackage *> *installedPackages;
-@property (nonatomic, strong) NSArray<SLQueueItem *> *queueItems;
+@property (nonatomic, strong) NSArray *installedPackages;
+@property (nonatomic, strong) NSArray *queueItems;
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
 @end
 
