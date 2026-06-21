@@ -4,6 +4,7 @@
 #import "Managers/SLDownloadManager.h"
 #import "Managers/SLRepoManager.h"
 #import "Models/SLPackage.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface SLPackagesViewController () <UISearchBarDelegate>
 @property (nonatomic, strong) NSArray *packages;
