@@ -2,7 +2,7 @@
 #import "Managers/SLDPKGManager.h"
 #import "Utils/SLCommandPaths.h"
 #import "Models/SLPackage.h"
-#import "C Contrib/decompression.h"
+#import "CContrib/decompression.h"
 
 NSString * const SLRepoManagerDidRefreshNotification = @"SLRepoManagerDidRefreshNotification";
 NSString * const SLRepoManagerRefreshFailedNotification = @"SLRepoManagerRefreshFailedNotification";

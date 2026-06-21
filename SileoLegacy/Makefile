@@ -22,8 +22,8 @@ Sileo_FILES = main.m \
 	Managers/SLDownloadManager.m \
 	Managers/SLDPKGManager.m \
 	Utils/SLCommandPaths.m \
-	C\ Contrib/decompression.c \
-	C\ Contrib/dpkgversion.c
+	CContrib/decompression.c \
+	CContrib/dpkgversion.c
 
 Sileo_CFLAGS = -fobjc-arc -I.
 Sileo_FRAMEWORKS = UIKit Foundation

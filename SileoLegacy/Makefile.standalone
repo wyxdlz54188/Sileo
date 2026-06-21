@@ -11,7 +11,7 @@ CC           ?= $(shell xcrun --sdk iphoneos --find clang)
 LD           ?= $(CC)
 CFLAGS       += -arch armv7 -isysroot $(SDK) -mios-version-min=6.0
 CFLAGS       += -fobjc-arc -fobjc-abi-version=2
-CFLAGS       += -I./ -I"./C Contrib"
+CFLAGS       += -I./ -I./CContrib
 LDFLAGS      += -arch armv7 -isysroot $(SDK) -mios-version-min=6.0
 LDFLAGS      += -framework UIKit -framework Foundation -framework CoreGraphics
 LDFLAGS      += -lz -lbz2 -llzma -lzstd
@@ -37,11 +37,11 @@ OBJC_SRCS    = main.m \
                Managers/SLDPKGManager.m \
                Utils/SLCommandPaths.m
 
-C_SRCS       = "C Contrib/decompression.c" \
-               "C Contrib/dpkgversion.c"
+C_SRCS       = CContrib/decompression.c \
+               CContrib/dpkgversion.c
 
 OBJS         = $(patsubst %.m,$(OBJDIR)/%.o,$(OBJC_SRCS))
-OBJS        += $(patsubst "C Contrib/%.c",$(OBJDIR)/C\ Contrib/%.o,$(C_SRCS))
+OBJS        += $(patsubst CContrib/%.c,$(OBJDIR)/CContrib/%.o,$(C_SRCS))
 
 all: $(APPDIR)/$(APPNAME)
 
@@ -52,7 +52,7 @@ $(OBJDIR)/%.o: %.m
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(OBJDIR)/C\ Contrib/%.o: C\ Contrib/%.c
+$(OBJDIR)/CContrib/%.o: CContrib/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
