@@ -38,7 +38,7 @@ Sileo_LDFLAGS = -lz -lbz2 -lobjc \
 	-Wl,-U,_ZSTD_decompressStream \
 	-Wl,-U,_ZSTD_isError \
 	-Wl,-U,_ZSTD_freeDCtx
-Sileo_INSTALL_PATH = /Applications/Sileo.app
+Sileo_INSTALL_PATH = /Applications
 
 include $(THEOS_MAKE_PATH)/application.mk
 
