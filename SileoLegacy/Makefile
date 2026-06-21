@@ -26,7 +26,7 @@ Sileo_FILES = main.m \
 	CContrib/dpkgversion.c
 
 Sileo_CFLAGS = -fobjc-arc -I. -D_FORTIFY_SOURCE=0 -fno-builtin-memcpy -fno-builtin-memset -fno-stack-protector
-Sileo_FRAMEWORKS = UIKit Foundation
+Sileo_FRAMEWORKS = UIKit Foundation CFNetwork CoreFoundation
 Sileo_LDFLAGS = -lz -lbz2 -lobjc \
 	-Wl,-U,_lzma_stream_decoder \
 	-Wl,-U,_lzma_alone_decoder \

@@ -15,6 +15,7 @@ NSString * const SLRepoManagerRefreshFailedNotification = @"SLRepoManagerRefresh
 - (NSDictionary *)parseStanzaFields:(NSString *)stanza;
 - (void)writeReposToDiskIfNeeded;
 - (NSData *)downloadURL:(NSString *)url;
+- (NSData *)downloadURLViaCurl:(NSString *)urlStr;
 - (NSData *)decompressData:(NSData *)data extension:(NSString *)ext;
 - (void)parsePackagesData:(NSData *)data repoURL:(NSString *)repoURL;
 - (NSString *)releaseURLForRepo:(SLRepo *)repo;
@@ -252,7 +253,20 @@ NSString * const SLRepoManagerRefreshFailedNotification = @"SLRepoManagerRefresh
     NSHTTPURLResponse *response = nil;
     NSError *error = nil;
     NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-    if (error || response.statusCode != 200) return nil;
+    if (!error && response.statusCode == 200) return data;
+    return [self downloadURLViaCurl:urlStr];
+}
+
+- (NSData *)downloadURLViaCurl:(NSString *)urlStr {
+    NSString *tmpPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"sileo_dl_tmp"];
+    [[NSFileManager defaultManager] removeItemAtPath:tmpPath error:nil];
+    NSString *cmd = [NSString stringWithFormat:
+        @"/usr/bin/curl -sS -L -A 'Sileo/2.0' --connect-timeout 15 -m 30 -o '%@' '%@' 2>/dev/null",
+        tmpPath, urlStr];
+    int ret = system([cmd UTF8String]);
+    if (ret != 0) return nil;
+    NSData *data = [NSData dataWithContentsOfFile:tmpPath];
+    [[NSFileManager defaultManager] removeItemAtPath:tmpPath error:nil];
     return data;
 }
 
