@@ -30,7 +30,7 @@
 @end
 
 @interface SLQueueManager ()
-@property (nonatomic, strong) NSMutableArray<SLQueueItem *> *mutableItems;
+@property (nonatomic, strong) NSMutableArray *mutableItems;
 @property (nonatomic, assign) BOOL isProcessing;
 @property (nonatomic, strong) dispatch_queue_t workQueue;
 @end
@@ -49,7 +49,7 @@
     return instance;
 }
 
-- (NSArray<SLQueueItem *> *)items { return [self.mutableItems copy]; }
+- (NSArray *)items { return [self.mutableItems copy]; }
 
 - (void)addItem:(SLQueueItem *)item {
     if ([self containsPackage:item.package]) return;

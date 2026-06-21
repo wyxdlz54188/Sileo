@@ -164,7 +164,7 @@
     return repo;
 }
 
-- (NSArray<SLRepo *> *)allRepos {
+- (NSArray *)allRepos {
     if (!_db) return @[];
     NSMutableArray *repos = [NSMutableArray array];
     const char *sql = "SELECT url, suite, components, label, origin, description, version, "
@@ -228,7 +228,7 @@
     return pkg;
 }
 
-- (void)savePackages:(NSArray<SLPackage *> *)packages forRepoURL:(NSString *)repoURL {
+- (void)savePackages:(NSArray *)packages forRepoURL:(NSString *)repoURL {
     if (!_db || !repoURL) return;
     const char *sql =
         "INSERT OR REPLACE INTO packages (package_id, name, version, description, section, "
@@ -291,81 +291,19 @@
 
 #define PKG_COLUMNS "package_id, name, version, description, section, architecture, maintainer, author, depiction, homepage, filename, size, icon, depends, conflicts, provides, replaces, essential, tag, source_repo_url, raw_control"
 
-- (NSArray<SLPackage *> *)allPackages {
+- (NSArray *)allPackages {
     return [self packagesMatchingQuery:nil];
 }
 
-- (NSArray<SLPackage *> *)packagesForRepoURL:(NSString *)repoURL {
-    if (!_db) return @[];
-    NSMutableArray *packages = [NSMutableArray array];
-    const char *sql = "SELECT " PKG_COLUMNS " FROM packages WHERE source_repo_url = ? ORDER BY name COLLATE NOCASE";
-    sqlite3_stmt *stmt;
-    if (sqlite3_prepare_v2(_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-        sqlite3_bind_text(stmt, 1, [repoURL UTF8String], -1, SQLITE_TRANSIENT);
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            [packages addObject:[self packageFromStmt:stmt]];
-        }
-        sqlite3_finalize(stmt);
-    }
-    return packages;
-}
+- (NSArray *)packagesForRepoURL:(NSString *)repoURL {
 
-- (NSArray<SLPackage *> *)packagesMatchingQuery:(NSString *)query {
-    if (!_db) return @[];
-    NSMutableArray *packages = [NSMutableArray array];
-    const char *sql;
-    if (query && query.length > 0) {
-        sql = "SELECT " PKG_COLUMNS " FROM packages WHERE package_id LIKE ?1 OR name LIKE ?1 "
-              "OR description LIKE ?1 ORDER BY name COLLATE NOCASE";
-    } else {
-        sql = "SELECT " PKG_COLUMNS " FROM packages ORDER BY name COLLATE NOCASE";
-    }
-    sqlite3_stmt *stmt;
-    if (sqlite3_prepare_v2(_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-        if (query && query.length > 0) {
-            NSString *pattern = [NSString stringWithFormat:@"%%%@%%", query];
-            sqlite3_bind_text(stmt, 1, [pattern UTF8String], -1, SQLITE_TRANSIENT);
-        }
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            [packages addObject:[self packageFromStmt:stmt]];
-        }
-        sqlite3_finalize(stmt);
-    }
-    return packages;
-}
+- (NSArray *)packagesMatchingQuery:(NSString *)query {
 
-- (NSArray<SLPackage *> *)packagesInSection:(NSString *)section {
-    if (!_db || !section) return @[];
-    NSMutableArray *packages = [NSMutableArray array];
-    const char *sql = "SELECT " PKG_COLUMNS " FROM packages WHERE section = ? ORDER BY name COLLATE NOCASE";
-    sqlite3_stmt *stmt;
-    if (sqlite3_prepare_v2(_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-        sqlite3_bind_text(stmt, 1, [section UTF8String], -1, SQLITE_TRANSIENT);
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            [packages addObject:[self packageFromStmt:stmt]];
-        }
-        sqlite3_finalize(stmt);
-    }
-    return packages;
-}
+- (NSArray *)packagesInSection:(NSString *)section {
 
-- (NSArray<SLPackage *> *)upgradablePackages {
-    NSArray *installed = [[SLDPKGManager sharedInstance] installedPackages];
-    NSMutableArray *upgradable = [NSMutableArray array];
-    for (SLPackage *installedPkg in installed) {
-        SLPackage *repoPkg = [self packageWithID:installedPkg.packageID];
-        if (repoPkg && [installedPkg compareVersion:repoPkg] == NSOrderedAscending) {
-            repoPkg.wantInfo = installedPkg.wantInfo;
-            repoPkg.eFlag = installedPkg.eFlag;
-            repoPkg.status = installedPkg.status;
-            repoPkg.installDate = installedPkg.installDate;
-            [upgradable addObject:repoPkg];
-        }
-    }
-    return upgradable;
-}
+- (NSArray *)upgradablePackages {
 
-- (NSArray<NSString *> *)allSections {
+- (NSArray *)allSections {
     if (!_db) return @[];
     NSMutableArray *sections = [NSMutableArray array];
     const char *sql = "SELECT DISTINCT section FROM packages WHERE section IS NOT NULL AND section != '' ORDER BY section";

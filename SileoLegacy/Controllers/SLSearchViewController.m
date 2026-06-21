@@ -5,7 +5,7 @@
 
 @interface SLSearchViewController ()
 @property (nonatomic, strong) UISearchBar *searchBar;
-@property (nonatomic, strong) NSArray<SLPackage *> *results;
+@property (nonatomic, strong) NSArray *results;
 @property (nonatomic, copy) NSString *currentQuery;
 @end
 
