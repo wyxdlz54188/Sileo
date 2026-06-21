@@ -39,10 +39,19 @@ jobs:
       working-directory: SileoLegacy
       run: |
         export PATH="$HOME/theos/bin:$PATH"
-        gmake package
-        ls -la packages/
+        set -o pipefail
+        gmake package 2>&1 | tee ../build.log
+        ls -la packages/ || true
+    
+    - name: Upload Build Log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log
+        path: build.log
     
     - name: Upload Package
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: sileo-legacy-ios6
