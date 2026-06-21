@@ -12,18 +12,18 @@
 
 - (void)saveRepo:(SLRepo *)repo;
 - (void)deleteRepo:(SLRepo *)repo;
-- (NSArray<SLRepo *> *)allRepos;
+- (NSArray *)allRepos;
 - (SLRepo *)repoWithURL:(NSString *)url;
 
-- (void)savePackages:(NSArray<SLPackage *> *)packages forRepoURL:(NSString *)repoURL;
+- (void)savePackages:(NSArray *)packages forRepoURL:(NSString *)repoURL;
 - (void)removePackagesForRepoURL:(NSString *)repoURL;
 - (void)removeAllPackages;
-- (NSArray<SLPackage *> *)packagesForRepoURL:(NSString *)repoURL;
-- (NSArray<SLPackage *> *)allPackages;
-- (NSArray<SLPackage *> *)packagesMatchingQuery:(NSString *)query;
-- (NSArray<SLPackage *> *)packagesInSection:(NSString *)section;
-- (NSArray<SLPackage *> *)upgradablePackages;
-- (NSArray<NSString *> *)allSections;
+- (NSArray *)packagesForRepoURL:(NSString *)repoURL;
+- (NSArray *)allPackages;
+- (NSArray *)packagesMatchingQuery:(NSString *)query;
+- (NSArray *)packagesInSection:(NSString *)section;
+- (NSArray *)upgradablePackages;
+- (NSArray *)allSections;
 - (SLPackage *)packageWithID:(NSString *)packageID;
 
 - (NSInteger)packageCount;

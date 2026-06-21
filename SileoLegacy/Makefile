@@ -31,7 +31,7 @@ Sileo_FILES = main.m \
 
 Sileo_CFLAGS = -fobjc-arc -I. -D_FORTIFY_SOURCE=0 -fno-builtin-memcpy -fno-builtin-memset -fno-stack-protector
 Sileo_FRAMEWORKS = UIKit Foundation CFNetwork CoreFoundation
-Sileo_LDFLAGS = -lz -lbz2 -lsqlite3 -lobjc \
+Sileo_LDFLAGS = -lz -lbz2 -lobjc \
 	-Wl,-U,_lzma_stream_decoder \
 	-Wl,-U,_lzma_alone_decoder \
 	-Wl,-U,_lzma_code \
@@ -41,7 +41,24 @@ Sileo_LDFLAGS = -lz -lbz2 -lsqlite3 -lobjc \
 	-Wl,-U,_ZSTD_createDCtx \
 	-Wl,-U,_ZSTD_decompressStream \
 	-Wl,-U,_ZSTD_isError \
-	-Wl,-U,_ZSTD_freeDCtx
+	-Wl,-U,_ZSTD_freeDCtx \
+	-Wl,-U,_sqlite3_open \
+	-Wl,-U,_sqlite3_close \
+	-Wl,-U,_sqlite3_exec \
+	-Wl,-U,_sqlite3_prepare_v2 \
+	-Wl,-U,_sqlite3_bind_text \
+	-Wl,-U,_sqlite3_bind_int \
+	-Wl,-U,_sqlite3_bind_double \
+	-Wl,-U,_sqlite3_bind_blob \
+	-Wl,-U,_sqlite3_bind_null \
+	-Wl,-U,_sqlite3_step \
+	-Wl,-U,_sqlite3_reset \
+	-Wl,-U,_sqlite3_finalize \
+	-Wl,-U,_sqlite3_column_text \
+	-Wl,-U,_sqlite3_column_int \
+	-Wl,-U,_sqlite3_column_double \
+	-Wl,-U,_sqlite3_column_blob \
+	-Wl,-U,_sqlite3_column_bytes
 Sileo_INSTALL_PATH = /Applications
 Sileo_INFO_PLIST_PATH = Info.plist
 

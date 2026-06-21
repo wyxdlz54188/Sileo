@@ -21,8 +21,8 @@ extern NSString * const SLRepoManagerProgressNotification;
 + (instancetype)sharedInstance;
 
 @property (nonatomic, weak) id<SLRepoManagerDelegate> delegate;
-@property (nonatomic, strong, readonly) NSArray<SLRepo *> *repos;
-@property (nonatomic, strong, readonly) NSArray<SLPackage *> *allPackages;
+@property (nonatomic, strong, readonly) NSArray *repos;
+@property (nonatomic, strong, readonly) NSArray *allPackages;
 @property (nonatomic, readonly) BOOL isRefreshing;
 
 - (void)loadRepos;
@@ -32,10 +32,10 @@ extern NSString * const SLRepoManagerProgressNotification;
 - (void)refreshRepo:(SLRepo *)repo;
 - (void)clearCache;
 
-- (NSArray<SLPackage *> *)packagesForRepo:(SLRepo *)repo;
-- (NSArray<SLPackage *> *)packagesMatchingQuery:(NSString *)query;
-- (NSArray<SLPackage *> *)upgradablePackages;
-- (NSArray<NSString *> *)allSections;
-- (NSArray<SLPackage *> *)packagesInSection:(NSString *)section;
+- (NSArray *)packagesForRepo:(SLRepo *)repo;
+- (NSArray *)packagesMatchingQuery:(NSString *)query;
+- (NSArray *)upgradablePackages;
+- (NSArray *)allSections;
+- (NSArray *)packagesInSection:(NSString *)section;
 
 @end

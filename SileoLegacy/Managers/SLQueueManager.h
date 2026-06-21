@@ -25,7 +25,7 @@ typedef NS_ENUM(NSInteger, SLQueueItemState) {
 @property (nonatomic, assign) SLQueueItemState state;
 @property (nonatomic, assign) float progress;
 @property (nonatomic, copy) NSString *errorMessage;
-@property (nonatomic, strong) NSArray<SLPackage *> *dependencies;
+@property (nonatomic, strong) NSArray *dependencies;
 
 + (instancetype)itemWithPackage:(SLPackage *)package action:(SLQueueAction)action;
 @end
@@ -43,7 +43,7 @@ typedef NS_ENUM(NSInteger, SLQueueItemState) {
 + (instancetype)sharedInstance;
 
 @property (nonatomic, weak) id<SLQueueManagerDelegate> delegate;
-@property (nonatomic, readonly) NSArray<SLQueueItem *> *items;
+@property (nonatomic, readonly) NSArray *items;
 @property (nonatomic, readonly) BOOL isProcessing;
 @property (nonatomic, assign) NSInteger maxConcurrentDownloads;
 
