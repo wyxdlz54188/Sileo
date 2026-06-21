@@ -1,0 +1,30 @@
+--- !tapi-tbd-v2
+archs:                 [ armv7, armv7s ]
+platform:              ios
+flags:                 [ not_app_extension_safe ]
+install-name:          '/usr/lib/libzstd.1.dylib'
+current-version:       1.5.0
+compatibility-version: 1
+exports:
+  - archs:                [ armv7, armv7s ]
+    symbols:              [ _ZSTD_CCtx_getParameter, _ZSTD_CCtx_loadDictionary,
+                           _ZSTD_CCtx_refCDict, _ZSTD_CCtx_refPrefix,
+                           _ZSTD_CCtx_reset, _ZSTD_CCtx_setParameter,
+                           _ZSTD_CCtx_setPledgedSrcSize,
+                           _ZSTD_CStreamInSize, _ZSTD_CStreamOutSize,
+                           _ZSTD_DCtx_getParameter, _ZSTD_DCtx_loadDictionary,
+                           _ZSTD_DCtx_refPrefix, _ZSTD_DCtx_reset,
+                           _ZSTD_DCtx_setParameter,
+                           _ZSTD_DStreamInSize, _ZSTD_DStreamOutSize,
+                           _ZSTD_DStreamInSize, _ZSTD_DStreamOutSize,
+                           _ZSTD_compress, _ZSTD_compress2,
+                           _ZSTD_compressBound, _ZSTD_compressCCtx,
+                           _ZSTD_compressStream, _ZSTD_compressStream2,
+                           _ZSTD_createCCtx, _ZSTD_createDCtx,
+                           _ZSTD_decompress, _ZSTD_decompressDCtx,
+                           _ZSTD_decompressStream, _ZSTD_endStream,
+                           _ZSTD_flushStream, _ZSTD_freeCCtx,
+                           _ZSTD_freeDCtx, _ZSTD_getErrorName,
+                           _ZSTD_isError, _ZSTD_maxCLevel,
+                           _ZSTD_nextInputType, _ZSTD_nextSrcSizeToDecompress,
+                           _ZSTD_versionNumber, _ZSTD_versionString ]

@@ -1,0 +1,155 @@
+name: Build SileoLegacy iOS 6
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build SileoLegacy (iOS 6.0)
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Install Theos dependencies
+      run: |
+        brew install make dpkg libffi ldid
+    
+    - name: Setup Theos
+      run: |
+        git clone --recursive --depth 1 https://github.com/theos/theos.git $HOME/theos
+        echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+        echo "$HOME/theos/bin" >> $GITHUB_PATH
+    
+    - name: Download iOS 6.0 SDK
+      run: |
+        mkdir -p $THEOS/sdks
+        cd /tmp
+        curl -L -o iPhoneOS6.0.sdk.zip "https://github.com/GrowtopiaJaw/iPhoneOS-SDK/releases/download/v1.0/iPhoneOS6.0.sdk.zip"
+        unzip -q iPhoneOS6.0.sdk.zip
+        mv 6.0 $THEOS/sdks/iPhoneOS6.0.sdk
+        rm -f iPhoneOS6.0.sdk.zip
+        echo "SDK installed at $THEOS/sdks/iPhoneOS6.0.sdk"
+        ls -la $THEOS/sdks/iPhoneOS6.0.sdk/
+    
+    - name: Generate TBD stubs for missing system libraries
+      run: |
+        SDK=$THEOS/sdks/iPhoneOS6.0.sdk
+        python3 << 'PYEOF'
+        import struct, os
+        
+        SDK = os.environ['THEOS'] + '/sdks/iPhoneOS6.0.sdk'
+        SYSTEM_LIB = SDK + '/usr/lib/system'
+        USR_LIB = SDK + '/usr/lib'
+        
+        def parse_fat_first_slice(data):
+            magic = struct.unpack('>I', data[:4])[0]
+            if magic == 0xcafebabe:
+                narchs = struct.unpack('>I', data[4:8])[0]
+                ao, az = 0, len(data)
+                for i in range(narchs):
+                    off = 8 + i * 20
+                    ct = struct.unpack('>I', data[off:off+4])[0]
+                    if ct == 12:
+                        ao = struct.unpack('>I', data[off+8:off+12])[0]
+                        az = struct.unpack('>I', data[off+12:off+16])[0]
+                        break
+                return ao, ao + az
+            return 0, len(data)
+        
+        def extract_exported_symbols(path):
+            with open(path, 'rb') as f:
+                data = f.read()
+            start, end = parse_fat_first_slice(data)
+            magic = struct.unpack_from('<I', data, start)[0]
+            is64 = (magic == 0xfeedfacf)
+            ncmds = struct.unpack_from('<I', data, start+16)[0]
+            hsize = 32 if is64 else 28
+            pos = start + hsize
+            symoff = nsyms = stroff = strsize = 0
+            for _ in range(ncmds):
+                if pos + 8 > len(data): break
+                cmd = struct.unpack_from('<I', data, pos)[0]
+                csz = struct.unpack_from('<I', data, pos+4)[0]
+                if cmd == 0x02:
+                    symoff = struct.unpack_from('<I', data, pos+8)[0]
+                    nsyms = struct.unpack_from('<I', data, pos+12)[0]
+                    stroff = struct.unpack_from('<I', data, pos+16)[0]
+                    strsize = struct.unpack_from('<I', data, pos+20)[0]
+                    break
+                pos += csz
+            if nsyms == 0:
+                return set()
+            entry_size = 16 if is64 else 12
+            nlist_off = start + symoff
+            strtab_off = start + stroff
+            symbols = set()
+            for i in range(nsyms):
+                eoff = nlist_off + i * entry_size
+                n_strx = struct.unpack_from('<I', data, eoff)[0]
+                n_type = struct.unpack_from('<B', data, eoff+4)[0]
+                if n_type & 0x01 and 0 < n_strx < strsize:
+                    end2 = data.find(b'\x00', strtab_off + n_strx, strtab_off + n_strx + 256)
+                    if end2 == -1: end2 = strtab_off + n_strx + 256
+                    name = data[strtab_off + n_strx:end2].decode('ascii', errors='replace')
+                    if not name.startswith('_OBJC_') and not name.startswith('.objc_'):
+                        symbols.add(name)
+            return symbols
+        
+        all_syms = set()
+        for fname in sorted(os.listdir(SYSTEM_LIB)):
+            if not fname.endswith('.dylib'): continue
+            syms = extract_exported_symbols(SYSTEM_LIB + '/' + fname)
+            all_syms.update(syms)
+            print(f"  {fname}: {len(syms)} symbols")
+        
+        util_path = USR_LIB + '/libutil.dylib'
+        if os.path.exists(util_path):
+            syms = extract_exported_symbols(util_path)
+            all_syms.update(syms)
+            print(f"  libutil.dylib: {len(syms)} symbols")
+        
+        print(f"Total: {len(all_syms)} symbols extracted")
+        
+        symbols_sorted = sorted(all_syms)
+        lines = []
+        lines.append("--- !tapi-tbd-v2")
+        lines.append("archs: [ armv7, armv7s ]")
+        lines.append("platform: ios")
+        lines.append("install-name: /usr/lib/libSystem.B.dylib")
+        lines.append("current-version: 1.0.0")
+        lines.append("compatibility-version: 1.0.0")
+        lines.append("exports:")
+        lines.append("  - archs: [ armv7, armv7s ]")
+        sym_line = "    symbols: [ "
+        for i, s in enumerate(symbols_sorted):
+            if i > 0:
+                sym_line += ", "
+            sym_line += s
+            if (i + 1) % 6 == 0 and i + 1 < len(symbols_sorted):
+                sym_line += ",\n              "
+        sym_line += " ]"
+        lines.append(sym_line)
+        
+        tbd_path = SDK + '/usr/lib/libSystem_syms.tbd'
+        with open(tbd_path, 'w') as f:
+            f.write('\n'.join(lines) + '\n')
+        
+        print(f"Written: {tbd_path} ({len('\n'.join(lines))} bytes)")
+        PYEOF
+    
+    - name: Build SileoLegacy
+      working-directory: SileoLegacy
+      run: |
+        export PATH="$HOME/theos/bin:$PATH"
+        gmake package
+        ls -la packages/
+    
+    - name: Upload Package
+      uses: actions/upload-artifact@v4
+      with:
+        name: sileo-legacy-ios6
+        path: SileoLegacy/packages/*.deb

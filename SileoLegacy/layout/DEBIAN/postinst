@@ -1,0 +1,7 @@
+#!/bin/bash
+# SileoLegacy postinst
+APP="/Applications/Sileo.app"
+if [ -d "$APP" ]; then
+    uicache -p "$APP"
+fi
+exit 0

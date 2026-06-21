@@ -1,0 +1,76 @@
+# SileoLegacy Makefile - Standalone build (requires Xcode with iOS 6+ SDK)
+# Usage:
+#   make                     - Build for iOS (armv7+arm64)
+#   make package             - Build for iOS and create .deb package
+#   make clean               - Clean build artifacts
+
+ARCHS        ?= armv7 arm64
+TARGET       ?= iphone:latest:6.0
+SDK          ?= $(shell xcrun --sdk iphoneos --show-sdk-path)
+CC           ?= $(shell xcrun --sdk iphoneos --find clang)
+LD           ?= $(CC)
+CFLAGS       += -arch armv7 -isysroot $(SDK) -mios-version-min=6.0
+CFLAGS       += -fobjc-arc -fobjc-abi-version=2
+CFLAGS       += -I./ -I"./C Contrib"
+LDFLAGS      += -arch armv7 -isysroot $(SDK) -mios-version-min=6.0
+LDFLAGS      += -framework UIKit -framework Foundation -framework CoreGraphics
+LDFLAGS      += -lz -lbz2 -llzma -lzstd
+LDFLAGS      += -fobjc-arc
+
+SRCDIR       = .
+OBJDIR       = .obj
+APPNAME      = Sileo
+APPDIR       = $(OBJDIR)/$(APPNAME).app
+
+OBJC_SRCS    = main.m \
+               Controllers/SLAppDelegate.m \
+               Controllers/SLTabBarController.m \
+               Controllers/SLSourcesViewController.m \
+               Controllers/SLPackagesViewController.m \
+               Controllers/SLPackageDetailViewController.m \
+               Controllers/SLDownloadsViewController.m \
+               Models/SLPackage.m \
+               Models/SLRepo.m \
+               Managers/SLRepoManager.m \
+               Managers/SLPackageManager.m \
+               Managers/SLDownloadManager.m \
+               Managers/SLDPKGManager.m \
+               Utils/SLCommandPaths.m
+
+C_SRCS       = "C Contrib/decompression.c" \
+               "C Contrib/dpkgversion.c"
+
+OBJS         = $(patsubst %.m,$(OBJDIR)/%.o,$(OBJC_SRCS))
+OBJS        += $(patsubst "C Contrib/%.c",$(OBJDIR)/C\ Contrib/%.o,$(C_SRCS))
+
+all: $(APPDIR)/$(APPNAME)
+
+clean:
+	rm -rf $(OBJDIR) packages
+
+$(OBJDIR)/%.o: %.m
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR)/C\ Contrib/%.o: C\ Contrib/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(APPDIR)/$(APPNAME): $(OBJS)
+	@mkdir -p $(APPDIR)
+	$(LD) $(LDFLAGS) $^ -o $@
+	@cp Info.plist $(APPDIR)/
+	@echo "APPL????" > $(APPDIR)/PkgInfo
+	@touch $(APPDIR)/$(APPNAME)
+
+stage: $(APPDIR)/$(APPNAME)
+	@mkdir -p $(OBJDIR)/stage/Applications
+	@cp -a $(APPDIR) $(OBJDIR)/stage/Applications/
+	@ldid -S/usr/share/entitlements/application.xml $(OBJDIR)/stage/Applications/$(APPNAME).app/$(APPNAME)
+
+package: stage
+	@cp -a layout/DEBIAN $(OBJDIR)/stage/
+	@mkdir -p packages
+	@dpkg-deb -Zxz --root-owner-group -b $(OBJDIR)/stage packages/org.coolstar.sileolegacy_2.0.0_iphoneos-arm.deb
+
+.PHONY: all clean stage package
